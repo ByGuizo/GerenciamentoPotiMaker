@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block titulo %}Escala de horários{% endblock %}
+
+{% block conteudo %}
+    <div class="cabecalho-pagina">
+        <h1 class="titulo-selo fundo-verde"><i class="fa-solid fa-user-clock"></i> Escala</h1>
+    </div>
+
+    {% if user.e_coordenador %}
+        <p class="dica surgir" style="--i:1"><i class="fa-solid fa-hand-pointer"></i> Toque em um horário para escolher quem fica no laboratório.</p>
+    {% endif %}
+
+    <nav class="abas" aria-label="Dias da semana">
+        {% for dia in dias %}
+            <a class="aba {% if dia.hoje %}aba-hoje ativa{% endif %}" href="#dia-{{ dia.valor }}">{{ dia.nome|slice:":3" }}</a>
+        {% endfor %}
+    </nav>
+
+    <div class="deslizante dias-escala">
+        {% for dia in dias %}
+            <section class="cartao dia-escala {% if dia.hoje %}painel-inicial{% endif %}" id="dia-{{ dia.valor }}">
+                <div class="cartao-topo {% if dia.hoje %}topo-verde{% else %}topo-preto{% endif %}">
+                    <h2><i class="fa-regular fa-calendar"></i> {{ dia.nome }}</h2>
+                    {% if dia.hoje %}<span class="selo-hoje">Hoje</span>{% endif %}
+                </div>
+                {% for celula in dia.celulas %}
+                    {% if user.e_coordenador %}
+                        <a class="horario-linha {% if celula.agora %}horario-agora{% endif %}" href="{% url 'editar_horario' celula.dia celula.horario %}">
+                    {% else %}
+                        <div class="horario-linha {% if celula.agora %}horario-agora{% endif %}">
+                    {% endif %}
+                        <span class="horario-rotulo">
+                            <strong>{{ celula.horario }}</strong>
+                            {{ celula.rotulo|slice:"4:-1" }}
+                            {% if celula.agora %}<span class="selo-agora"><i class="fa-solid fa-circle"></i> Agora</span>{% endif %}
+                        </span>
+                        <span class="lista-chips">
+                            {% for membro in celula.membros %}
+                                <span class="chip chip-mini">
+                                    <span class="avatar">{{ membro.first_name|default:membro.username|slice:":1"|upper }}</span>
+                                    {{ membro }}
+                                </span>
+                            {% empty %}
+                                <span class="sem-ninguem">Ninguém</span>
+                            {% endfor %}
+                        </span>
+                    {% if user.e_coordenador %}
+                            <i class="fa-solid fa-chevron-right horario-seta"></i>
+                        </a>
+                    {% else %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </section>
+        {% endfor %}
+    </div>
+
+    <section class="cartao grade-tabela surgir" style="--i:2">
+        <div class="tabela-rolagem">
+            <table class="grade">
+                <thead>
+                    <tr>
+                        <th>Horário</th>
+                        {% for dia in dias %}
+                            <th class="{% if dia.hoje %}hoje{% endif %}">{{ dia.nome }}{% if dia.hoje %} · hoje{% endif %}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in linhas %}
+                        <tr>
+                            <th>{{ linha.rotulo }}</th>
+                            {% for celula in linha.celulas %}
+                                <td>
+                                    {% if user.e_coordenador %}
+                                        <a class="celula {% if celula.agora %}celula-agora{% endif %}" href="{% url 'editar_horario' celula.dia celula.horario %}">
+                                    {% else %}
+                                        <div class="celula {% if celula.agora %}celula-agora{% endif %}">
+                                    {% endif %}
+                                        {% if celula.agora %}<span class="selo-agora"><i class="fa-solid fa-circle"></i> Agora</span>{% endif %}
+                                        {% for membro in celula.membros %}
+                                            <span class="chip chip-mini">
+                                                <span class="avatar">{{ membro.first_name|default:membro.username|slice:":1"|upper }}</span>
+                                                {{ membro }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="sem-ninguem">—</span>
+                                        {% endfor %}
+                                    {% if user.e_coordenador %}
+                                        </a>
+                                    {% else %}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

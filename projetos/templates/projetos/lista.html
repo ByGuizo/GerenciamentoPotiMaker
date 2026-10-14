@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block titulo %}Projetos{% endblock %}
+
+{% block conteudo %}
+    <div class="cabecalho-pagina">
+        <h1 class="titulo-selo fundo-ciano"><i class="fa-solid fa-folder-open"></i> Projetos</h1>
+        <div class="grupo-botoes">
+            <a class="botao botao-branco botao-pequeno" href="{% url 'quadro' %}"><i class="fa-solid fa-table-columns"></i> Ver quadro</a>
+        </div>
+        <a class="botao botao-fucsia botao-flutuante" href="{% url 'novo_projeto' %}" title="Novo projeto">
+            <i class="fa-solid fa-plus"></i><span>Novo projeto</span>
+        </a>
+    </div>
+
+    <div class="grade-cartoes">
+        {% for projeto in projetos %}
+            <article class="cartao cartao-pop" style="--i:{{ forloop.counter0 }}">
+                <div class="cartao-topo {% cycle 'topo-fucsia' 'topo-ciano' 'topo-amarelo' 'topo-verde' 'topo-roxo' %}">
+                    <h2><i class="fa-solid fa-folder"></i> {{ projeto.nome }}</h2>
+                    <span class="contador" title="Atividades">{{ projeto.total_atividades }}</span>
+                </div>
+                <div class="projeto-corpo">
+                    <p>{{ projeto.descricao|default:"Sem descrição."|truncatewords:25 }}</p>
+                </div>
+                <div class="cartao-acoes">
+                    <a class="botao botao-verde botao-pequeno" href="{% url 'quadro' %}?projeto={{ projeto.pk }}"><i class="fa-solid fa-table-columns"></i> Quadro</a>
+                    <a class="botao botao-amarelo botao-pequeno" href="{% url 'editar_projeto' projeto.pk %}"><i class="fa-solid fa-pen"></i> Editar</a>
+                    {% if user.e_coordenador %}
+                        <a class="botao botao-vermelho botao-pequeno" href="{% url 'excluir_projeto' projeto.pk %}"><i class="fa-solid fa-trash"></i> Excluir</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% empty %}
+            <section class="cartao">
+                <p class="vazio"><i class="fa-solid fa-folder-plus"></i> Nenhum projeto ainda. Toque no + para criar o primeiro.</p>
+            </section>
+        {% endfor %}
+    </div>
+{% endblock %}

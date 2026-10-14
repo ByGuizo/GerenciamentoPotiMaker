@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block titulo %}Entrar{% endblock %}
+
+{% block conteudo %}
+    <div class="marca-publica">
+        <span class="selo selo-fucsia"><i class="fa-solid fa-bolt"></i> FABLAB POTIMAKER</span>
+    </div>
+
+    <section class="cartao">
+        <div class="topo-publico">
+            <i class="fa-solid fa-user-astronaut"></i>
+            <div>
+                <h1>Bem-vindo de volta</h1>
+                <p>Entre para acessar o laboratório</p>
+            </div>
+        </div>
+        <form method="post" class="cartao-corpo formulario">
+            {% csrf_token %}
+            {{ form.as_div }}
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="botao botao-verde botao-largo"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
+        </form>
+        <div class="cartao-rodape">
+            <p class="rodape-publico-texto">Ainda não tem conta?</p>
+            <a class="botao botao-amarelo botao-largo" href="{% url 'cadastro' %}"><i class="fa-solid fa-user-plus"></i> Criar conta</a>
+        </div>
+    </section>
+
+    <p class="rodape-publico"><i class="fa-solid fa-location-dot"></i> IFRN Campus Canguaretama · Faça você mesmo, seja um maker.</p>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#E01FB8">
+    <title>{% block titulo %}Início{% endblock %} | FabLab PotiMaker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&family=Poppins:wght@500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+    <script src="{% static 'js/interface.js' %}"></script>
+</head>
+<body class="{% if user.is_authenticated %}fundo-app{% else %}fundo-publico{% endif %}">
+    {% if user.is_authenticated %}
+        <header class="cabecalho">
+            <div class="cabecalho-interno">
+                <a class="logo" href="{% url 'inicio' %}">
+                    <span class="selo selo-fucsia"><i class="fa-solid fa-bolt"></i> FABLAB</span>
+                    <span class="selo selo-amarelo logo-texto">POTIMAKER</span>
+                </a>
+
+                <nav class="navegacao" aria-label="Navegação principal">
+                    <a class="link-nav cor-fucsia {% if request.path == '/' %}ativo{% endif %}" href="{% url 'inicio' %}"><i class="fa-solid fa-house"></i> Início</a>
+                    <a class="link-nav cor-amarelo {% if '/inventario/' in request.path %}ativo{% endif %}" href="{% url 'lista_itens' %}"><i class="fa-solid fa-boxes-stacked"></i> Inventário</a>
+                    <a class="link-nav cor-ciano {% if '/projetos/' in request.path %}ativo{% endif %}" href="{% url 'quadro' %}"><i class="fa-solid fa-diagram-project"></i> Projetos</a>
+                    <a class="link-nav cor-verde {% if '/escala/' in request.path %}ativo{% endif %}" href="{% url 'grade' %}"><i class="fa-solid fa-user-clock"></i> Escala</a>
+                    <a class="link-nav cor-roxo {% if '/membros/' in request.path %}ativo{% endif %}" href="{% url 'membros' %}"><i class="fa-solid fa-users"></i> Membros</a>
+                </nav>
+
+                <div class="acoes-cabecalho">
+                    <button type="button" class="botao-tema" title="Alternar tema claro/escuro">
+                        <i class="fa-solid fa-moon icone-lua"></i>
+                        <i class="fa-solid fa-sun icone-sol"></i>
+                        <span class="texto-tema"><span class="texto-escuro">Escuro</span><span class="texto-claro">Claro</span></span>
+                    </button>
+                    <span class="selo-usuario" title="{{ user }}">
+                        <span class="avatar">{{ user.first_name|default:user.username|slice:":1"|upper }}</span>
+                        <span>{{ user }}</span>
+                    </span>
+                    <form class="form-sair" method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="botao botao-branco"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+                    </form>
+                    <button type="button" class="botao-perfil" aria-expanded="false" aria-label="Abrir menu">
+                        {{ user.first_name|default:user.username|slice:":1"|upper }}
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="gaveta-fundo"></div>
+        <aside class="gaveta" aria-label="Menu">
+            <div class="gaveta-topo">
+                <div class="gaveta-usuario">
+                    <span class="avatar avatar-grande">{{ user.first_name|default:user.username|slice:":1"|upper }}</span>
+                    <div>
+                        <strong>{{ user }}</strong>
+                        <small>@{{ user.username }} · {{ user.get_tipo_display }}</small>
+                    </div>
+                </div>
+                <button type="button" class="gaveta-fechar" aria-label="Fechar menu"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <nav class="gaveta-links">
+                <p class="gaveta-titulo">Navegação</p>
+                <a class="item-gaveta {% if request.path == '/' %}ativo{% endif %}" href="{% url 'inicio' %}"><i class="fa-solid fa-house"></i> Início</a>
+                <a class="item-gaveta {% if '/inventario/' in request.path %}ativo{% endif %}" href="{% url 'lista_itens' %}"><i class="fa-solid fa-boxes-stacked"></i> Inventário</a>
+                <a class="item-gaveta {% if '/quadro/' in request.path or '/atividades/' in request.path %}ativo{% endif %}" href="{% url 'quadro' %}"><i class="fa-solid fa-table-columns"></i> Quadro de atividades</a>
+                <a class="item-gaveta {% if request.path == '/projetos/' or '/projetos/novo/' in request.path %}ativo{% endif %}" href="{% url 'lista_projetos' %}"><i class="fa-solid fa-folder-open"></i> Lista de projetos</a>
+                <a class="item-gaveta {% if '/escala/' in request.path %}ativo{% endif %}" href="{% url 'grade' %}"><i class="fa-solid fa-user-clock"></i> Escala</a>
+                <a class="item-gaveta {% if '/membros/' in request.path %}ativo{% endif %}" href="{% url 'membros' %}"><i class="fa-solid fa-users"></i> Membros</a>
+            </nav>
+            <div class="gaveta-rodape">
+                <button type="button" class="botao-tema item-gaveta">
+                    <i class="fa-solid fa-moon icone-lua"></i>
+                    <i class="fa-solid fa-sun icone-sol"></i>
+                    <span class="texto-escuro">Ativar tema escuro</span><span class="texto-claro">Ativar tema claro</span>
+                </button>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="item-gaveta sair"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="faixa">
+            <div class="faixa-interna">
+                <p class="faixa-local"><i class="fa-solid fa-location-dot"></i> Laboratório de Inovação e Prototipagem · IFRN Campus Canguaretama</p>
+                <p class="faixa-lema">FAÇA VOCÊ MESMO, <span>SEJA UM MAKER.</span></p>
+            </div>
+        </div>
+    {% else %}
+        <button type="button" class="botao-tema tema-publico" title="Alternar tema claro/escuro">
+            <i class="fa-solid fa-moon icone-lua"></i>
+            <i class="fa-solid fa-sun icone-sol"></i>
+            <span class="texto-tema"><span class="texto-escuro">Escuro</span><span class="texto-claro">Claro</span></span>
+        </button>
+        <div class="bolha bolha-1"></div>
+        <div class="bolha bolha-2"></div>
+        <div class="bolha bolha-3"></div>
+        <i class="fa-solid fa-gear flutuante flutuante-1"></i>
+        <i class="fa-solid fa-bolt flutuante flutuante-2"></i>
+        <i class="fa-solid fa-microchip flutuante flutuante-3"></i>
+    {% endif %}
+
+    <main class="{% if user.is_authenticated %}conteudo{% else %}caixa-publica{% endif %}">
+        {% if messages %}
+            <ul class="mensagens">
+                {% for mensagem in messages %}
+                    <li class="mensagem mensagem-{{ mensagem.tags }}">{{ mensagem }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% block conteudo %}{% endblock %}
+    </main>
+
+    {% if user.is_authenticated %}
+        <footer class="rodape">
+            <div class="rodape-interno">
+                <span><i class="fa-regular fa-copyright"></i> {% now "Y" %} FabLab PotiMaker · IFRN Canguaretama</span>
+                <span><i class="fa-solid fa-hammer"></i> Faça você mesmo</span>
+            </div>
+        </footer>
+
+        <nav class="barra-inferior" aria-label="Navegação rápida">
+            <a class="item-barra {% if request.path == '/' %}ativo{% endif %}" href="{% url 'inicio' %}"><i class="fa-solid fa-house"></i>Início</a>
+            <a class="item-barra {% if '/inventario/' in request.path %}ativo{% endif %}" href="{% url 'lista_itens' %}"><i class="fa-solid fa-boxes-stacked"></i>Inventário</a>
+            <a class="item-barra {% if '/projetos/' in request.path %}ativo{% endif %}" href="{% url 'quadro' %}"><i class="fa-solid fa-diagram-project"></i>Projetos</a>
+            <a class="item-barra {% if '/escala/' in request.path %}ativo{% endif %}" href="{% url 'grade' %}"><i class="fa-solid fa-user-clock"></i>Escala</a>
+            <a class="item-barra {% if '/membros/' in request.path %}ativo{% endif %}" href="{% url 'membros' %}"><i class="fa-solid fa-users"></i>Membros</a>
+        </nav>
+    {% endif %}
+</body>
+</html>

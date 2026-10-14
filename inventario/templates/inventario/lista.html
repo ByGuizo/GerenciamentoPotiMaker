@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block titulo %}Inventário{% endblock %}
+
+{% block conteudo %}
+    <div class="cabecalho-pagina">
+        <h1 class="titulo-selo"><i class="fa-solid fa-boxes-stacked"></i> Inventário</h1>
+        <a class="botao botao-fucsia botao-flutuante" href="{% url 'novo_item' %}" title="Novo item">
+            <i class="fa-solid fa-plus"></i><span>Novo item</span>
+        </a>
+    </div>
+
+    <form method="get" class="cartao filtros surgir" style="--i:1">
+        <div class="campo-largo">
+            <label for="busca"><i class="fa-solid fa-magnifying-glass"></i> Buscar</label>
+            <input type="search" id="busca" name="busca" value="{{ busca }}" placeholder="Nome do item">
+        </div>
+        <div>
+            <label for="categoria">Categoria</label>
+            <select id="categoria" name="categoria">
+                <option value="">Todas</option>
+                {% for valor, nome in categorias %}
+                    <option value="{{ valor }}" {% if valor == categoria %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">Todos</option>
+                {% for valor, nome in situacoes %}
+                    <option value="{{ valor }}" {% if valor == status %}selected{% endif %}>{{ nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="grupo-botoes">
+            <a class="botao botao-branco" href="{% url 'lista_itens' %}" title="Limpar filtros"><i class="fa-solid fa-eraser"></i> Limpar</a>
+            <button type="submit" class="botao"><i class="fa-solid fa-filter"></i> Filtrar</button>
+        </div>
+    </form>
+
+    <section class="cartao lista-cartoes surgir" style="--i:2">
+        <div class="cartao-topo topo-preto">
+            <h2><i class="fa-solid fa-list"></i> Itens</h2>
+            <span class="contador">{{ itens|length }}</span>
+        </div>
+        <table class="tabela">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Quantidade</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens %}
+                    <tr style="--i:{{ forloop.counter0 }}">
+                        <td class="celula-principal">{{ item.nome }}</td>
+                        <td data-rotulo="Categoria"><span class="etiqueta categoria-{{ item.categoria|lower }}">{{ item.get_categoria_display }}</span></td>
+                        <td data-rotulo="Quantidade"><strong>{{ item.quantidade }}</strong></td>
+                        <td data-rotulo="Status"><span class="etiqueta status-{{ item.status|lower }}">{{ item.get_status_display }}</span></td>
+                        <td class="celula-acoes">
+                            <div class="grupo-botoes">
+                                <a class="botao botao-amarelo botao-icone" href="{% url 'editar_item' item.pk %}" title="Editar"><i class="fa-solid fa-pen"></i></a>
+                                {% if user.e_coordenador %}
+                                    <a class="botao botao-vermelho botao-icone" href="{% url 'excluir_item' item.pk %}" title="Excluir"><i class="fa-solid fa-trash"></i></a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="vazio"><i class="fa-solid fa-box-open"></i> Nenhum item encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

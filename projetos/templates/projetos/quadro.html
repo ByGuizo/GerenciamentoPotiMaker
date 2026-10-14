@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block titulo %}Quadro de atividades{% endblock %}
+
+{% block conteudo %}
+    <div class="cabecalho-pagina">
+        <h1 class="titulo-selo fundo-fucsia"><i class="fa-solid fa-diagram-project"></i> Projetos</h1>
+        <div class="grupo-botoes">
+            <a class="botao botao-branco botao-pequeno" href="{% url 'lista_projetos' %}"><i class="fa-solid fa-folder-open"></i> Lista de projetos</a>
+        </div>
+        <a class="botao botao-amarelo botao-flutuante" href="{% url 'nova_atividade' %}{% if projeto_escolhido %}?projeto={{ projeto_escolhido }}{% endif %}" title="Nova atividade">
+            <i class="fa-solid fa-plus"></i><span>Nova atividade</span>
+        </a>
+    </div>
+
+    <form method="get" class="cartao filtro-linha surgir" style="--i:1">
+        <div>
+            <label for="projeto" class="so-leitor">Projeto</label>
+            <select id="projeto" name="projeto">
+                <option value="">Todos os projetos</option>
+                {% for projeto in projetos %}
+                    <option value="{{ projeto.pk }}" {% if projeto.pk == projeto_escolhido %}selected{% endif %}>{{ projeto.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="botao botao-icone" title="Filtrar"><i class="fa-solid fa-filter"></i></button>
+    </form>
+
+    <nav class="abas" aria-label="Colunas do quadro">
+        {% for coluna in colunas %}
+            <a class="aba {% if forloop.first %}ativa{% endif %}" href="#coluna-{{ coluna.valor|lower }}">
+                {{ coluna.nome }} <span class="contador">{{ coluna.atividades|length }}</span>
+            </a>
+        {% endfor %}
+    </nav>
+
+    <div class="deslizante">
+        {% for coluna in colunas %}
+            <section class="cartao coluna surgir" id="coluna-{{ coluna.valor|lower }}" style="--i:{{ forloop.counter }}">
+                <div class="cartao-topo {% cycle 'topo-amarelo' 'topo-ciano' 'topo-verde' %}">
+                    <h2><i class="fa-solid {% cycle 'fa-list-ul' 'fa-gears' 'fa-circle-check' %}"></i> {{ coluna.nome }}</h2>
+                    <span class="contador">{{ coluna.atividades|length }}</span>
+                </div>
+                <div class="coluna-corpo">
+                    {% for atividade in coluna.atividades %}
+                        <article class="atividade" style="--i:{{ forloop.counter0 }}">
+                            <div class="atividade-topo">
+                                <div>
+                                    <p class="atividade-projeto"><i class="fa-solid fa-folder"></i> {{ atividade.projeto.nome }}</p>
+                                    <h3>{{ atividade.nome }}</h3>
+                                </div>
+                                <span class="etiqueta prioridade-{{ atividade.prioridade }}">{{ atividade.get_prioridade_display }}</span>
+                            </div>
+                            {% if atividade.descricao %}
+                                <p class="atividade-texto">{{ atividade.descricao|truncatewords:20 }}</p>
+                            {% endif %}
+                            {% if atividade.prazo %}
+                                <p><span class="etiqueta etiqueta-prazo">{{ atividade.prazo|date:"d/m/Y" }}</span></p>
+                            {% endif %}
+                            {% if atividade.membros.all %}
+                                <div class="atividade-membros">
+                                    {% for membro in atividade.membros.all %}
+                                        <span class="chip chip-mini">
+                                            <span class="avatar">{{ membro.first_name|default:membro.username|slice:":1"|upper }}</span>
+                                            {{ membro }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="atividade-rodape">
+                                <div class="grupo-botoes">
+                                    {% if atividade.status != 'A_FAZER' %}
+                                        <form method="post" action="{% url 'mover_atividade' atividade.pk 'voltar' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="projeto" value="{{ projeto_escolhido|default_if_none:'' }}">
+                                            <button type="submit" class="botao botao-branco botao-icone" title="Voltar uma coluna"><i class="fa-solid fa-arrow-left"></i></button>
+                                        </form>
+                                    {% endif %}
+                                    {% if atividade.status != 'CONCLUIDO' %}
+                                        <form method="post" action="{% url 'mover_atividade' atividade.pk 'avancar' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="projeto" value="{{ projeto_escolhido|default_if_none:'' }}">
+                                            <button type="submit" class="botao botao-verde botao-icone" title="Avançar uma coluna"><i class="fa-solid fa-arrow-right"></i></button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                                <div class="grupo-botoes">
+                                    <a class="botao botao-amarelo botao-icone" href="{% url 'editar_atividade' atividade.pk %}" title="Editar"><i class="fa-solid fa-pen"></i></a>
+                                    {% if user.e_coordenador %}
+                                        <a class="botao botao-vermelho botao-icone" href="{% url 'excluir_atividade' atividade.pk %}" title="Excluir"><i class="fa-solid fa-trash"></i></a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </article>
+                    {% empty %}
+                        <p class="coluna-vazia"><i class="fa-regular fa-face-smile"></i> Nada por aqui.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+{% endblock %}

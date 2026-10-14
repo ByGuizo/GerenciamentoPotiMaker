@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block titulo %}Página não encontrada{% endblock %}
+
+{% block conteudo %}
+    <section class="pagina-erro">
+        <span class="numero-erro">404</span>
+        <section class="cartao">
+            <div class="cartao-corpo">
+                <h1><i class="fa-solid fa-magnifying-glass"></i> Página não encontrada</h1>
+                <p>O endereço não existe ou o registro foi excluído.</p>
+                <a class="botao" href="{% url 'inicio' %}"><i class="fa-solid fa-house"></i> Voltar ao início</a>
+            </div>
+        </section>
+    </section>
+{% endblock %}

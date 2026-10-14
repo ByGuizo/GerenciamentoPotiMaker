@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block titulo %}Membros{% endblock %}
+
+{% block conteudo %}
+    <div class="cabecalho-pagina">
+        <h1 class="titulo-selo fundo-roxo"><i class="fa-solid fa-users"></i> Membros</h1>
+    </div>
+
+    {% if user.e_coordenador and pendentes %}
+        <section class="cartao lista-cartoes surgir">
+            <div class="cartao-topo">
+                <h2><i class="fa-solid fa-bell"></i> Aguardando aprovação</h2>
+                <span class="contador">{{ pendentes|length }}</span>
+            </div>
+            <table class="tabela">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Usuário</th>
+                        <th>Matrícula</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pendente in pendentes %}
+                        <tr style="--i:{{ forloop.counter0 }}">
+                            <td class="celula-principal">{{ pendente.first_name }}</td>
+                            <td data-rotulo="Usuário">@{{ pendente.username }}</td>
+                            <td data-rotulo="Matrícula">{{ pendente.matricula }}</td>
+                            <td class="celula-acoes">
+                                <div class="grupo-botoes">
+                                    <a class="botao botao-vermelho botao-pequeno" href="{% url 'excluir_membro' pendente.pk %}"><i class="fa-solid fa-xmark"></i> Recusar</a>
+                                    <form method="post" action="{% url 'aprovar_membro' pendente.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="botao botao-verde botao-pequeno"><i class="fa-solid fa-check"></i> Aprovar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    {% endif %}
+
+    <div class="grade-cartoes">
+        {% for membro in ativos %}
+            <article class="cartao cartao-pop" style="--i:{{ forloop.counter0 }}">
+                <div class="cartao-membro">
+                    <span class="avatar avatar-grande">{{ membro.first_name|default:membro.username|slice:":1"|upper }}</span>
+                    <div>
+                        <h3>{{ membro }}</h3>
+                        <p>@{{ membro.username }} · Matrícula {{ membro.matricula }}</p>
+                        <span class="etiqueta tipo-{{ membro.tipo|lower }}">{{ membro.get_tipo_display }}</span>
+                    </div>
+                </div>
+                {% if user.e_coordenador %}
+                    <div class="cartao-acoes">
+                        <a class="botao botao-amarelo botao-pequeno" href="{% url 'editar_membro' membro.pk %}"><i class="fa-solid fa-pen"></i> Editar</a>
+                        <a class="botao botao-branco botao-pequeno" href="{% url 'senha_membro' membro.pk %}"><i class="fa-solid fa-key"></i> Senha</a>
+                        {% if membro != user %}
+                            <a class="botao botao-vermelho botao-pequeno" href="{% url 'excluir_membro' membro.pk %}"><i class="fa-solid fa-trash"></i> Excluir</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </article>
+        {% empty %}
+            <p class="vazio"><i class="fa-solid fa-inbox"></i> Nenhum membro ativo.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

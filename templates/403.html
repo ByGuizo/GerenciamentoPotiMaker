@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block titulo %}Acesso negado{% endblock %}
+
+{% block conteudo %}
+    <section class="pagina-erro">
+        <span class="numero-erro">403</span>
+        <section class="cartao">
+            <div class="cartao-corpo">
+                <h1><i class="fa-solid fa-lock"></i> Acesso negado</h1>
+                <p>Só o coordenador pode fazer isso.</p>
+                <a class="botao" href="{% url 'inicio' %}"><i class="fa-solid fa-house"></i> Voltar ao início</a>
+            </div>
+        </section>
+    </section>
+{% endblock %}

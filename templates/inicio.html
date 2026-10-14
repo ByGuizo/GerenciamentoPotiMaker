@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block titulo %}Início{% endblock %}
+
+{% block conteudo %}
+    <div class="saudacao">
+        <h1>Olá, {{ user.first_name|default:user.username }}!</h1>
+        <p>O que vamos construir hoje?</p>
+    </div>
+
+    {% if pendentes %}
+        <a class="aviso-pendentes" href="{% url 'membros' %}">
+            <span><i class="fa-solid fa-bell"></i> {{ pendentes }} cadastro{{ pendentes|pluralize }} aguardando aprovação</span>
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+    {% endif %}
+
+    <div class="painel-inicio">
+        <section class="cartao surgir">
+            <div class="cartao-topo topo-fucsia">
+                <h2><i class="fa-solid fa-user-clock"></i> Quem deve estar agora</h2>
+                <a href="{% url 'grade' %}" title="Ver a escala completa"><i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            <div class="cartao-corpo">
+                {% if codigo %}
+                    <p class="agora-legenda">
+                        {% if em_andamento %}
+                            <span class="ponto-vivo"></span> Agora · {{ rotulo_do_horario }}
+                        {% else %}
+                            <span class="selo-intervalo"><i class="fa-solid fa-hourglass-half"></i> Intervalo</span> A seguir · {{ rotulo_do_horario }}
+                        {% endif %}
+                    </p>
+                    <div class="lista-chips">
+                        {% for membro in escalados %}
+                            <span class="chip {% if em_andamento %}chip-verde{% endif %}" style="--i:{{ forloop.counter0 }}">
+                                <span class="avatar">{{ membro.first_name|default:membro.username|slice:":1"|upper }}</span>
+                                {{ membro }}
+                            </span>
+                        {% empty %}
+                            <p><i class="fa-regular fa-face-frown"></i> Ninguém escalado para este horário.</p>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p><i class="fa-regular fa-moon"></i> Fora do horário de funcionamento.</p>
+                    <p class="agora-legenda">Segunda a sexta · 07:00 às 18:00</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <div class="atalhos">
+            <a class="atalho fundo-amarelo" style="--i:1" href="{% url 'lista_itens' %}">
+                <i class="fa-solid fa-boxes-stacked atalho-icone"></i>
+                <i class="fa-solid fa-boxes-stacked atalho-fundo"></i>
+                <strong>Inventário</strong>
+                <small>Componentes, ferramentas e equipamentos</small>
+            </a>
+            <a class="atalho fundo-fucsia" style="--i:2" href="{% url 'quadro' %}">
+                <i class="fa-solid fa-diagram-project atalho-icone"></i>
+                <i class="fa-solid fa-diagram-project atalho-fundo"></i>
+                <strong>Projetos</strong>
+                <small>Quadro de atividades da equipe</small>
+            </a>
+            <a class="atalho fundo-verde" style="--i:3" href="{% url 'grade' %}">
+                <i class="fa-solid fa-user-clock atalho-icone"></i>
+                <i class="fa-solid fa-calendar-week atalho-fundo"></i>
+                <strong>Escala</strong>
+                <small>Quem fica no laboratório e quando</small>
+            </a>
+            <a class="atalho fundo-roxo" style="--i:4" href="{% url 'membros' %}">
+                <i class="fa-solid fa-users atalho-icone"></i>
+                <i class="fa-solid fa-users atalho-fundo"></i>
+                <strong>Membros</strong>
+                <small>A equipe do FabLab</small>
+            </a>
+        </div>
+    </div>
+{% endblock %}

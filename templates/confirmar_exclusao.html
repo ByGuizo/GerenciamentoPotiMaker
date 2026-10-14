@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}Confirmar exclusão{% endblock %}
+
+{% block conteudo %}
+    <section class="cartao estreito confirmacao">
+        <div class="cartao-topo topo-vermelho">
+            <h1><i class="fa-solid fa-triangle-exclamation"></i> Tem certeza?</h1>
+        </div>
+        <div class="cartao-corpo">
+            <p>Você vai excluir <span class="confirmacao-alvo">{{ objeto }}</span>.</p>
+            <p>Isso não pode ser desfeito.</p>
+            {% if aviso %}<p><strong>{{ aviso }}</strong></p>{% endif %}
+            <form method="post" class="barra-salvar">
+                {% csrf_token %}
+                <a class="botao botao-branco" href="{{ voltar_url }}"><i class="fa-solid fa-xmark"></i> Cancelar</a>
+                <button type="submit" class="botao botao-vermelho"><i class="fa-solid fa-trash"></i> Excluir</button>
+            </form>
+        </div>
+    </section>
+{% endblock %}
