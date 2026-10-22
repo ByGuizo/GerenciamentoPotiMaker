@@ -4,7 +4,7 @@ Sistema de gestão do FabLab do IFRN Campus Canguaretama: inventário, projetos 
 atividades, escala de horários do laboratório e cadastro de membros com aprovação do
 coordenador.
 
-Trabalho de Conclusão de Curso de Guizo.
+Meu TCC galera.
 
 ## Como rodar
 
