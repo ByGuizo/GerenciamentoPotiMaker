@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.csp import CSP
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,13 +28,12 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
 if not SECRET_KEY:
-    if DEBUG:
-        SECRET_KEY = 'chave-apenas-para-desenvolvimento'
-    else:
-        raise ImproperlyConfigured('Defina a variável DJANGO_SECRET_KEY no arquivo .env.')
+    raise ImproperlyConfigured('Defina a variável DJANGO_SECRET_KEY no arquivo .env.')
 
 ALLOWED_HOSTS = lista_do_ambiente('DJANGO_ALLOWED_HOSTS')
 CSRF_TRUSTED_ORIGINS = lista_do_ambiente('DJANGO_CSRF_TRUSTED_ORIGINS')
+
+CONFIAR_X_REAL_IP = os.environ.get('DJANGO_CONFIAR_X_REAL_IP', 'False') == 'True'
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
@@ -57,6 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.csp.ContentSecurityPolicyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -94,6 +95,8 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'contas.Usuario'
 
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.AllowAllUsersModelBackend']
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -112,6 +115,39 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'inicio'
 LOGOUT_REDIRECT_URL = 'login'
+
+SESSION_COOKIE_AGE = 60 * 60 * 12
+
+SECURE_CSP = {
+    'default-src': [CSP.SELF],
+    'script-src': [CSP.SELF],
+    'style-src': [CSP.SELF, CSP.UNSAFE_INLINE, 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
+    'font-src': [CSP.SELF, 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+    'img-src': [CSP.SELF, 'data:'],
+    'form-action': [CSP.SELF],
+    'frame-ancestors': [CSP.NONE],
+    'base-uri': [CSP.SELF],
+    'object-src': [CSP.NONE],
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simples': {'format': '{asctime} {levelname} {message}', 'style': '{'},
+    },
+    'handlers': {
+        'arquivo': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'seguranca.log',
+            'formatter': 'simples',
+            'encoding': 'utf-8',
+        },
+    },
+    'loggers': {
+        'potimaker': {'handlers': ['arquivo'], 'level': 'INFO'},
+    },
+}
 
 LANGUAGE_CODE = 'pt-br'
 

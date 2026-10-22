@@ -51,7 +51,7 @@
                     <span class="avatar avatar-grande">{{ membro.first_name|default:membro.username|slice:":1"|upper }}</span>
                     <div>
                         <h3>{{ membro }}</h3>
-                        <p>@{{ membro.username }} · Matrícula {{ membro.matricula }}</p>
+                        <p>@{{ membro.username }}{% if user.e_coordenador %} · Matrícula {{ membro.matricula }}{% endif %}</p>
                         <span class="etiqueta tipo-{{ membro.tipo|lower }}">{{ membro.get_tipo_display }}</span>
                     </div>
                 </div>

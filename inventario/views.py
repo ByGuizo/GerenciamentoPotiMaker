@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -6,6 +8,8 @@ from contas.permissoes import exigir_coordenador
 
 from .forms import ItemForm
 from .models import Item
+
+log = logging.getLogger('potimaker')
 
 
 def lista_itens(request):
@@ -63,6 +67,7 @@ def excluir_item(request, pk):
     exigir_coordenador(request.user)
     item = get_object_or_404(Item, pk=pk)
     if request.method == 'POST':
+        log.info('%s excluiu o item %r (id=%s)', request.user.username, item.nome, item.pk)
         item.delete()
         messages.success(request, f'{item} foi excluído.')
         return redirect('lista_itens')

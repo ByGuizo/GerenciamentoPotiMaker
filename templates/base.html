@@ -36,10 +36,10 @@
                         <i class="fa-solid fa-sun icone-sol"></i>
                         <span class="texto-tema"><span class="texto-escuro">Escuro</span><span class="texto-claro">Claro</span></span>
                     </button>
-                    <span class="selo-usuario" title="{{ user }}">
+                    <a class="selo-usuario" href="{% url 'minha_senha' %}" title="Alterar minha senha">
                         <span class="avatar">{{ user.first_name|default:user.username|slice:":1"|upper }}</span>
                         <span>{{ user }}</span>
-                    </span>
+                    </a>
                     <form class="form-sair" method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
                         <button type="submit" class="botao botao-branco"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
@@ -73,6 +73,7 @@
                 <a class="item-gaveta {% if '/membros/' in request.path %}ativo{% endif %}" href="{% url 'membros' %}"><i class="fa-solid fa-users"></i> Membros</a>
             </nav>
             <div class="gaveta-rodape">
+                <a class="item-gaveta {% if '/minha-senha/' in request.path %}ativo{% endif %}" href="{% url 'minha_senha' %}"><i class="fa-solid fa-key"></i> Minha senha</a>
                 <button type="button" class="botao-tema item-gaveta">
                     <i class="fa-solid fa-moon icone-lua"></i>
                     <i class="fa-solid fa-sun icone-sol"></i>

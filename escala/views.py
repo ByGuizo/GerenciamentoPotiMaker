@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect, render
@@ -8,6 +10,8 @@ from contas.permissoes import exigir_coordenador
 
 from .forms import EscalaForm
 from .models import HorarioEscala, horario_de_agora
+
+log = logging.getLogger('potimaker')
 
 
 def grade(request):
@@ -50,6 +54,8 @@ def editar_horario(request, dia, horario):
         form = EscalaForm(request.POST, instance=registro)
         if form.is_valid():
             form.save()
+            nomes = ', '.join(membro.username for membro in registro.membros.all())
+            log.info('%s alterou a escala de %s: %s', request.user.username, registro, nomes or 'ninguem')
             messages.success(request, f'Escala de {registro} atualizada.')
             return redirect('grade')
     else:

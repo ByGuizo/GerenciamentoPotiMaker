@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.db.models import Count
 from django.http import Http404
@@ -10,20 +12,27 @@ from contas.permissoes import exigir_coordenador
 from .forms import AtividadeForm, ProjetoForm
 from .models import Atividade, Projeto
 
+log = logging.getLogger('potimaker')
+
+
+def numero_ou_nada(texto):
+    if texto.isascii() and texto.isdigit() and len(texto) <= 9:
+        return int(texto)
+    return None
+
 
 def endereco_do_quadro(projeto_id):
     endereco = reverse('quadro')
-    if projeto_id.isdigit():
-        endereco += f'?projeto={projeto_id}'
+    numero = numero_ou_nada(projeto_id)
+    if numero:
+        endereco += f'?projeto={numero}'
     return endereco
 
 
 def quadro(request):
-    projeto_id = request.GET.get('projeto', '')
+    projeto_escolhido = numero_ou_nada(request.GET.get('projeto', ''))
     atividades = Atividade.objects.select_related('projeto').prefetch_related('membros')
-    projeto_escolhido = None
-    if projeto_id.isdigit():
-        projeto_escolhido = int(projeto_id)
+    if projeto_escolhido:
         atividades = atividades.filter(projeto_id=projeto_escolhido)
 
     colunas = []
@@ -57,7 +66,8 @@ def nova_atividade(request):
             messages.success(request, 'Atividade criada.')
             return redirect(endereco_do_quadro(str(atividade.projeto_id)))
     else:
-        inicial = {'projeto': projeto_id} if projeto_id.isdigit() else {}
+        numero = numero_ou_nada(projeto_id)
+        inicial = {'projeto': numero} if numero else {}
         form = AtividadeForm(initial=inicial)
     contexto = {'form': form, 'titulo': 'Nova atividade', 'voltar_url': endereco_do_quadro(projeto_id)}
     return render(request, 'formulario.html', contexto)
@@ -81,6 +91,7 @@ def excluir_atividade(request, pk):
     exigir_coordenador(request.user)
     atividade = get_object_or_404(Atividade, pk=pk)
     if request.method == 'POST':
+        log.info('%s excluiu a atividade %r (id=%s)', request.user.username, atividade.nome, atividade.pk)
         atividade.delete()
         messages.success(request, f'{atividade} foi excluída.')
         return redirect('quadro')
@@ -124,6 +135,7 @@ def excluir_projeto(request, pk):
     exigir_coordenador(request.user)
     projeto = get_object_or_404(Projeto, pk=pk)
     if request.method == 'POST':
+        log.info('%s excluiu o projeto %r (id=%s)', request.user.username, projeto.nome, projeto.pk)
         projeto.delete()
         messages.success(request, f'{projeto} foi excluído.')
         return redirect('lista_projetos')

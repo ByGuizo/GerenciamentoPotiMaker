@@ -1,41 +1,50 @@
-from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.core.cache import cache
+import logging
 
+from django import forms
+from django.contrib.admin.forms import AdminAuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+
+from .limites import ip_do_cliente, limite_atingido, registrar_tentativa, zerar_tentativas
 from .models import Usuario
 
-LIMITE_DE_TENTATIVAS = 5
-MINUTOS_DE_BLOQUEIO = 15
+LIMITE_DE_TENTATIVAS = 10
+MINUTOS_DE_BLOQUEIO = 5
+
+log = logging.getLogger('potimaker')
 
 
 class LoginForm(AuthenticationForm):
+    error_messages = {
+        **AuthenticationForm.error_messages,
+        'inactive': 'Seu cadastro ainda está aguardando a aprovação do coordenador.',
+    }
+
     def chave_das_tentativas(self):
         usuario = self.data.get('username', '').lower()
-        ip = self.request.META.get('HTTP_X_REAL_IP') or self.request.META.get('REMOTE_ADDR')
-        return f'login-{usuario}-{ip}'
+        return f'login-{usuario}-{ip_do_cliente(self.request)}'
 
     def clean(self):
         chave = self.chave_das_tentativas()
-        erros = cache.get(chave, 0)
-        if erros >= LIMITE_DE_TENTATIVAS:
+        if limite_atingido(chave, LIMITE_DE_TENTATIVAS):
+            log.warning(
+                'Login bloqueado: usuario=%r ip=%s',
+                self.data.get('username', ''),
+                ip_do_cliente(self.request),
+            )
             raise forms.ValidationError(
                 f'Muitas tentativas erradas. Espere {MINUTOS_DE_BLOQUEIO} minutos e tente de novo.'
             )
         try:
             dados = super().clean()
         except forms.ValidationError:
-            cache.set(chave, erros + 1, MINUTOS_DE_BLOQUEIO * 60)
+            registrar_tentativa(chave, MINUTOS_DE_BLOQUEIO * 60)
             raise
-        cache.delete(chave)
+        zerar_tentativas(chave)
         return dados
 
-    def get_invalid_login_error(self):
-        nome = self.cleaned_data.get('username')
-        senha = self.cleaned_data.get('password')
-        usuario = Usuario.objects.filter(username__iexact=nome).first()
-        if usuario and not usuario.is_active and usuario.check_password(senha):
-            return forms.ValidationError('Seu cadastro ainda está aguardando a aprovação do coordenador.')
-        return super().get_invalid_login_error()
+
+class LoginAdminForm(LoginForm, AdminAuthenticationForm):
+    pass
 
 
 class CadastroForm(UserCreationForm):
